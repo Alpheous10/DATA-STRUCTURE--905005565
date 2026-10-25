@@ -1,40 +1,20 @@
-"""
-DCOMP320 - Data Structures and Algorithms
-Assignment: Stacks Implementation
-
-Reads mathematical expressions from input.txt, evaluates each one using
-stacks, and writes the results to output.txt in the same layout
-(results replace expressions, separator lines are kept as they are).
-
-Usage:
-    python evaluator.py                      # uses input.txt -> output.txt
-    python evaluator.py my_in.txt my_out.txt # custom file names
-"""
-
 import sys
 
 
-# ---------------------------------------------------------------------------
-# 1. Stack class
-# ---------------------------------------------------------------------------
 class Stack:
-    """A simple LIFO (Last In, First Out) stack built on a Python list."""
 
     def __init__(self):
         self._items = []
 
     def push(self, item):
-        """Add an item to the top of the stack."""
         self._items.append(item)
 
     def pop(self):
-        """Remove and return the top item. Raises IndexError if empty."""
         if self.is_empty():
             raise IndexError("pop from an empty stack")
         return self._items.pop()
 
     def peek(self):
-        """Return the top item without removing it. Raises IndexError if empty."""
         if self.is_empty():
             raise IndexError("peek at an empty stack")
         return self._items[-1]
@@ -46,20 +26,10 @@ class Stack:
         return len(self._items)
 
 
-# ---------------------------------------------------------------------------
-# 2. Expression evaluation
-# ---------------------------------------------------------------------------
 PRECEDENCE = {"+": 1, "-": 1, "*": 2, "/": 2}
 
 
 def tokenize(expression):
-    """
-    Break an expression string into tokens: numbers (as floats),
-    operators (+ - * /) and parentheses.
-    A minus sign counts as part of a number when it sits where a value is
-    expected (start of expression, after "(" or after another operator),
-    so "-3 + 10" and "2 * -3" both work.
-    """
     tokens = []
     i = 0
     n = len(expression)
@@ -71,7 +41,6 @@ def tokenize(expression):
             i += 1
             continue
 
-        # Is the previous token something that produces a value?
         prev_is_value = bool(tokens) and (isinstance(tokens[-1], float) or tokens[-1] == ")")
 
         starts_number = ch.isdigit() or ch == "."
@@ -103,12 +72,11 @@ def tokenize(expression):
 
 
 def apply_operator(values, operators):
-    """Pop one operator and two values, calculate, push the result back."""
     op = operators.pop()
     if values.size() < 2:
         raise ValueError("Malformed expression")
 
-    right = values.pop()   # the second operand comes off the stack first
+    right = values.pop()
     left = values.pop()
 
     if op == "+":
@@ -117,7 +85,7 @@ def apply_operator(values, operators):
         result = left - right
     elif op == "*":
         result = left * right
-    else:  # "/"
+    else:
         if right == 0:
             raise ZeroDivisionError("Division by zero")
         result = left / right
@@ -126,16 +94,9 @@ def apply_operator(values, operators):
 
 
 def evaluate(expression):
-    """
-    Evaluate an infix expression using two stacks:
-      - values    : holds numbers
-      - operators : holds operators and "("
-    Precedence rule: before pushing a new operator, first apply any operator
-    on top of the stack that has the same or higher precedence.
-    """
     values = Stack()
     operators = Stack()
-    expect_operand = True  # True when the next token must be a number or "("
+    expect_operand = True
 
     for token in tokenize(expression):
         if isinstance(token, float):
@@ -156,10 +117,10 @@ def evaluate(expression):
                 apply_operator(values, operators)
             if operators.is_empty():
                 raise ValueError("Mismatched parentheses")
-            operators.pop()  # discard the "("
+            operators.pop()
             expect_operand = False
 
-        else:  # + - * /
+        else:
             if expect_operand:
                 raise ValueError(f"Unexpected operator '{token}'")
             while (
@@ -186,32 +147,26 @@ def evaluate(expression):
 
 
 def format_result(value):
-    """Show whole numbers without a decimal point (13 not 13.0)."""
     if value == int(value):
         return str(int(value))
     return str(round(value, 4))
 
 
-# ---------------------------------------------------------------------------
-# 3 & 4. File reading, evaluating and writing
-# ---------------------------------------------------------------------------
 def is_separator(line):
-    """A separator is a line made only of dashes (at least three), e.g. -----"""
     line = line.strip()
     return len(line) >= 3 and set(line) == {"-"}
 
 
 def process_file(input_path, output_path):
-    """Read expressions, evaluate them, write results in the same layout."""
     with open(input_path, "r", encoding="utf-8-sig") as infile:
         lines = infile.read().splitlines()
 
     output_lines = []
     for line in lines:
         if not line.strip():
-            continue  # ignore blank lines
+            continue
         if is_separator(line):
-            output_lines.append(line.strip())  # keep the same separator
+            output_lines.append(line.strip())
             continue
         try:
             output_lines.append(format_result(evaluate(line)))
