@@ -1,7 +1,3 @@
-# Stack-Based Expression Evaluator
-
-**Course:** DCOMP320 Data Structures and Algorithms, Limkokwing University of Creative Technology, Sierra Leone
-**Assignment:** Stacks Implementation
 
 A Python program that reads maths expressions from `input.txt`, evaluates each one using stacks, and writes the answers to `output.txt`.
 
